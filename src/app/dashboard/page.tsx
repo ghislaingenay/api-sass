@@ -17,12 +17,32 @@ async function Dashboard({}: Props) {
     String(customer?.stripe_customer_id)
   );
 
+  const invoiceData = await stripeCustomer.getUpcomingInvoiceByCustomerId(
+    customer?.stripe_customer_id!
+  );
+  const currentUsage = invoiceData?.amount_due / 100;
+
   return (
     <>
       {hasSub ? (
-        <div>
+        <div className="flex flex-col gap-4">
           <div className="rounded-md px-4 py-2 bg-emerald-400 font-medium text-sm text-white">
             You have a subscription!
+          </div>
+          <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-md">
+            <p className="text-sm text-black px-6 py-4 font-medium">
+              Current Usage
+            </p>
+            <p className="text-sm font-mono text-zinc-800 px-6 py-4">
+              {currentUsage / 100}
+            </p>
+          </div>
+
+          <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-md">
+            <p className="text-sm text-black px-6 py-4 font-medium">API Key</p>
+            <p className="text-sm font-mono text-zinc-800 px-6 py-4">
+              {customer?.api_key}
+            </p>
           </div>
         </div>
       ) : (

@@ -1,6 +1,7 @@
 import { Session } from "next-auth";
 import { StripeInitializer } from "./StripeInitializer";
 import { prismaPool } from "./PrismaPool";
+import { randomUUID } from "crypto";
 
 type NextAuthSession = Session | null;
 
@@ -27,6 +28,12 @@ export class StripeCustomer extends StripeInitializer {
       const userHaveStripeUserId = user?.stripe_customer_id;
       if (userHaveStripeUserId) return user;
 
+      const userHaveApiKey = user?.api_key && user?.api_key !== "";
+      console.log("d", userHaveApiKey);
+      const apiKey = userHaveApiKey
+        ? {}
+        : { api_key: "secret_" + randomUUID() };
+
       const customer = await this.stripe.customers.create({
         email: emailSession!,
       });
@@ -36,6 +43,7 @@ export class StripeCustomer extends StripeInitializer {
         },
         data: {
           stripe_customer_id: customer.id,
+          ...apiKey,
         },
       });
     }
@@ -55,5 +63,14 @@ export class StripeCustomer extends StripeInitializer {
     );
     const haveSubscriptions = subscriptions.data.length > 0;
     return haveSubscriptions;
+  }
+
+  async getUpcomingInvoiceByCustomerId(stripeCustomerId: string) {
+    const subscriptions = await this.getSubscriptionsByCustomerId(
+      stripeCustomerId
+    );
+    return await this.stripe.invoices.retrieveUpcoming({
+      subscription: subscriptions.data[0].id,
+    });
   }
 }
