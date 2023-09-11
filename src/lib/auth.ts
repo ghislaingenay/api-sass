@@ -6,3 +6,8 @@ import { redirect } from "next/navigation";
 export const mustBeLoggedIn = async (session: Session | null) => {
   if (!session) redirect("api/auth/signin");
 };
+
+export const getAuthSession = async () => {
+  const session = await getServerSession(authOptions);
+  return session;
+};

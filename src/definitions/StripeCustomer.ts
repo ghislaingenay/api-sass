@@ -25,19 +25,19 @@ export class StripeCustomer extends StripeInitializer {
       const emailSession = this.session.user?.email;
       const user = await this.findUserByEmail();
       const userHaveStripeUserId = user?.stripe_customer_id;
-      if (!userHaveStripeUserId) {
-        const customer = await this.stripe.customers.create({
-          email: emailSession!,
-        });
-        await prismaPool.user.update({
-          where: {
-            id: user?.id,
-          },
-          data: {
-            stripe_customer_id: customer.id,
-          },
-        });
-      }
+      if (userHaveStripeUserId) return user;
+
+      const customer = await this.stripe.customers.create({
+        email: emailSession!,
+      });
+      return await prismaPool.user.update({
+        where: {
+          id: user?.id,
+        },
+        data: {
+          stripe_customer_id: customer.id,
+        },
+      });
     }
   }
 
