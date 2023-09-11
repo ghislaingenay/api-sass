@@ -2,17 +2,19 @@ import { StripeCustomer } from "@/definitions/StripeCustomer";
 import { mustBeLoggedIn } from "@/lib/auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const stripeCustomer = new StripeCustomer();
   const session = await getServerSession(authOptions);
+  const stripeCustomer = new StripeCustomer(session);
   await mustBeLoggedIn(session);
-  await stripeCustomer.createCustomerIfNull(session);
+  await stripeCustomer.createCustomerIfNull();
+
+  const hasSub = await stripeCustomer.hasSubscription();
+  console.log("hasSub", hasSub);
   return (
     <div className="">
       {/* <Header /> */}

@@ -48,6 +48,16 @@ model User {
   accounts      Account[]
   sessions      Session[]
   stripe_customer_id String?
+  stripe_subscription_item String?
+}
+
+model Log {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  status    Int
+  userId    String?
+  method    String?
+
 }
 
 model VerificationToken {
