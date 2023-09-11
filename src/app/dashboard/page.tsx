@@ -3,6 +3,7 @@ import { StripeCustomer } from "@definitions/StripeCustomer";
 import { getAuthSession } from "@lib/auth";
 import React from "react";
 import Link from "next/link";
+import { prismaPool } from "@/definitions/PrismaPool";
 
 type Props = {};
 
@@ -21,6 +22,16 @@ async function Dashboard({}: Props) {
     customer?.stripe_customer_id!
   );
   const currentUsage = invoiceData?.amount_due / 100;
+
+  const top10Recentlogs = await prismaPool.log.findMany({
+    where: {
+      userId: customer?.id,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 10,
+  });
 
   return (
     <>
@@ -43,6 +54,24 @@ async function Dashboard({}: Props) {
             <p className="text-sm font-mono text-zinc-800 px-6 py-4">
               {customer?.api_key}
             </p>
+          </div>
+          <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-md">
+            <p className="text-sm text-black px-6 py-4 font-medium">
+              Log Events
+            </p>
+            {top10Recentlogs.map((item, index) => (
+              <div className="flex items-center gap-4" key={index}>
+                <p className="text-sm font-mono text-zinc-800 px-6 py-4">
+                  {item.method}
+                </p>
+                <p className="text-sm font-mono text-zinc-800 px-6 py-4">
+                  {item.status}
+                </p>
+                <p className="text-sm font-mono text-zinc-800 px-6 py-4">
+                  {item.createdAt.toDateString()}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       ) : (

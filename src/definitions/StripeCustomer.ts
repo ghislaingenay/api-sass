@@ -7,7 +7,7 @@ type NextAuthSession = Session | null;
 
 export class StripeCustomer extends StripeInitializer {
   session: NextAuthSession = null;
-  constructor(session: NextAuthSession) {
+  constructor(session: NextAuthSession = null) {
     super();
     this.session = session;
   }
@@ -29,7 +29,6 @@ export class StripeCustomer extends StripeInitializer {
       if (userHaveStripeUserId) return user;
 
       const userHaveApiKey = user?.api_key && user?.api_key !== "";
-      console.log("d", userHaveApiKey);
       const apiKey = userHaveApiKey
         ? {}
         : { api_key: "secret_" + randomUUID() };
@@ -71,6 +70,16 @@ export class StripeCustomer extends StripeInitializer {
     );
     return await this.stripe.invoices.retrieveUpcoming({
       subscription: subscriptions.data[0].id,
+    });
+  }
+
+  async retrieveCustomer(stripeCustomerId: string) {
+    return await this.stripe.customers.retrieve(stripeCustomerId);
+  }
+
+  async addAPICallToRecordByItemId(itemId: string) {
+    await this.stripe.subscriptionItems.createUsageRecord(String(itemId), {
+      quantity: 1,
     });
   }
 }
