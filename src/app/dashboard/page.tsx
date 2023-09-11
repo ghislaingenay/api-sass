@@ -21,7 +21,7 @@ async function Dashboard({}: Props) {
   const invoiceData = await stripeCustomer.getUpcomingInvoiceByCustomerId(
     customer?.stripe_customer_id!
   );
-  const currentUsage = invoiceData?.amount_due / 100;
+  const currentUsage = invoiceData?.amount_due;
 
   const top10Recentlogs = await prismaPool.log.findMany({
     where: {
